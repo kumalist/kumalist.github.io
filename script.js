@@ -50,7 +50,7 @@ function renderList() {
     const filteredData = getFilteredData(); // 헬퍼 함수 사용
 
     if (filteredData.length === 0) {
-        listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;">해당하는 농담곰이 없어요 😢</div>';
+        listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;">상품을 찾을 수 없습니다.</div>';
         return;
     }
 

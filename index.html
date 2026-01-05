@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<header class="mobile-header">
+    <header class="mobile-header">
         <div class="header-left">
             <h1 class="mobile-logo">NONGDAMGOM</h1>
             <span id="mobileModeBadge" class="mode-badge">보유</span>
@@ -24,7 +24,6 @@
     <div class="app-container">
         
         <aside class="sidebar">
-
             <div class="sidebar-title">NONGDAMGOM</div>
             
             <div class="tab-container">
@@ -37,59 +36,60 @@
                 <button class="reset-btn record-reset" onclick="resetRecords()">🗑️ 기록 삭제</button>
             </div>
 
-            <hr class="sidebar-divider">
+<hr class="sidebar-divider">
 
-            <div class="filter-item-wrapper">
-                <div class="filter-group">
-                    <button class="text-btn active" onclick="setFilter('country', 'all')">ALL</button>
-                    <div class="flag-btn" style="background-image: url('images/icon_flag/flag_kr.png');" onclick="setFilter('country', 'korea')">
-                        <div class="overlay">한국</div>
-                    </div>
-                    <div class="flag-btn" style="background-image: url('images/icon_flag/flag_jp.png');" onclick="setFilter('country', 'japan')">
-                        <div class="overlay">일본</div>
-                    </div>
-                    <div class="flag-btn" style="background-image: url('images/icon_flag/flag_cn.png');" onclick="setFilter('country', 'china')">
-                        <div class="overlay">중국</div>
-                    </div>
-                    <div class="flag-btn" style="background-image: url('images/icon_flag/flag_tw.png');" onclick="setFilter('country', 'taiwan')">
-                        <div class="overlay">대만</div>
+            <div class="filter-section">
+                
+                <span class="filter-label">필터</span>
+
+                <div class="filter-item-wrapper">
+                    <div class="filter-group">
+                        <button class="text-btn active" onclick="setFilter('country', 'all')">ALL</button>
+                        <div class="flag-btn" style="background-image: url('images/icon_flag/flag_kr.png');" onclick="setFilter('country', 'korea')">
+                            <div class="overlay">한국</div>
+                        </div>
+                        <div class="flag-btn" style="background-image: url('images/icon_flag/flag_jp.png');" onclick="setFilter('country', 'japan')">
+                            <div class="overlay">일본</div>
+                        </div>
+                        <div class="flag-btn" style="background-image: url('images/icon_flag/flag_cn.png');" onclick="setFilter('country', 'china')">
+                            <div class="overlay">중국</div>
+                        </div>
+                        <div class="flag-btn" style="background-image: url('images/icon_flag/flag_tw.png');" onclick="setFilter('country', 'taiwan')">
+                            <div class="overlay">대만</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="filter-item-wrapper">
-                <span class="filter-label">캐릭터</span>
-                <div class="filter-group">
-                    <button class="text-btn active" onclick="setFilter('character', 'all')">ALL</button>
-                    <div class="char-btn" style="background-image: url('images/icon_characters/icon_kuma.png');" onclick="setFilter('character', 'kuma')">
-                        <div class="overlay">농담곰</div>
-                    </div>
-                    <div class="char-btn" style="background-image: url('images/icon_characters/icon_mogukoro.png');" onclick="setFilter('character', 'mogukoro')">
-                        <div class="overlay">두더지<br>고로케</div>
-                    </div>
-                    <div class="char-btn" style="background-image: url('images/icon_characters/icon_pug.png');" onclick="setFilter('character', 'pug')">
-                        <div class="overlay">퍼그 상</div>
-                    </div>
-                    <div class="char-btn" style="background-image: url('images/icon_characters/icon_ngn.png');" onclick="setFilter('character', 'ngn')">
-                        <div class="overlay">기타</div>
+                <div class="filter-item-wrapper">
+                    <div class="filter-group">
+                        <button class="text-btn active" onclick="setFilter('character', 'all')">ALL</button>
+                        <div class="char-btn" style="background-image: url('images/icon_characters/icon_kuma.png');" onclick="setFilter('character', 'kuma')">
+                            <div class="overlay">농담곰</div>
+                        </div>
+                        <div class="char-btn" style="background-image: url('images/icon_characters/icon_mogukoro.png');" onclick="setFilter('character', 'mogukoro')">
+                            <div class="overlay">두더지<br>고로케</div>
+                        </div>
+                        <div class="char-btn" style="background-image: url('images/icon_characters/icon_pug.png');" onclick="setFilter('character', 'pug')">
+                            <div class="overlay">퍼그 상</div>
+                        </div>
+                        <div class="char-btn" style="background-image: url('images/icon_characters/icon_ngn.png');" onclick="setFilter('character', 'ngn')">
+                            <div class="overlay">기타</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="filter-item-wrapper">
-                <span class="filter-label">회사</span>
-                <div class="filter-group" data-type="company">
-                    <button class="text-btn active" onclick="setCompanyFilter('all')" data-val="all">ALL</button>
-                    <button class="text-btn" onclick="setCompanyFilter('old')" data-val="old">예전</button>
-                    <button class="text-btn" onclick="setCompanyFilter('new')" data-val="new">현재</button>
+                <div class="filter-item-wrapper">
+                    <div class="filter-group" data-type="company">
+                        <button class="text-btn active" onclick="setCompanyFilter('all')" data-val="all">ALL</button>
+                        <button class="text-btn" onclick="setCompanyFilter('old')" data-val="old">구 회사</button>
+                        <button class="text-btn" onclick="setCompanyFilter('new')" data-val="new">신 회사</button>
+                    </div>
+                    <div id="old-subs" class="sub-filter-container"></div>
+                    <div id="new-subs" class="sub-filter-container"></div>
                 </div>
-                <div id="old-subs" class="sub-filter-container"></div>
-                <div id="new-subs" class="sub-filter-container"></div>
-            </div>
 
-            <hr class="sidebar-divider">
-            
-<div class="save-options">
+            </div> <hr class="sidebar-divider">
+            <div class="save-options">
                 <span class="filter-label">체크한 이미지 저장</span>
                 
                 <div class="option-row title-row">
@@ -113,11 +113,13 @@
                 </div>
 
                 <div class="button-group" style="margin-top: 15px;">
-                    <button class="action-btn page-btn" id="genBtnCurrent" onclick="generateImage('current')" style="font-size: 13px; padding: 0;">현재 페이지만 저장</button>
+                    <button class="action-btn page-btn" id="genBtnCurrent" onclick="generateImage('current')" style="font-size: 13px; padding: 0;">현재 페이지</button>
                     <button class="action-btn" id="genBtnAll" onclick="generateImage('all')" style="font-size: 13px; padding: 0;">전체 저장</button>
                 </div>
             </div>
+
             <button class="close-sidebar-btn" onclick="toggleSidebar()">✕ 닫기</button>
+
         </aside>
 
         <main class="main-content">

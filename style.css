@@ -19,6 +19,10 @@
 
 body.theme-wish { --theme-color: var(--wish-color); }
 
+button, input, select, textarea {
+    font-family: 'Gowun Dodum', sans-serif;
+}
+
 body {
     background-color: var(--bg-color);
     font-family: 'Gowun Dodum', sans-serif;
@@ -65,9 +69,20 @@ body.theme-wish .tab-btn:not(.active) { color: #f2bbbb; }
 
 .filter-group { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 
-.filter-label { font-size: 14px; font-weight: bold; color: #b2bec3; margin-bottom: 10px; text-align: center; display: block; }
-/* [수정] 위시 모드 라벨 텍스트 컬러 변경 (#f2bbbb) */
+/* [수정] 라벨 하단 여백 제거 (컨테이너 gap으로 통일하기 위해) */
+.filter-label { 
+    font-size: 14px; font-weight: bold; color: #b2bec3; 
+    margin-bottom: 0; /* 10px -> 0으로 변경 */
+    text-align: center; display: block; 
+}
 body.theme-wish .filter-label { color: #f2bbbb; } 
+
+/* [추가] 필터 섹션: 저장 옵션과 동일한 구조와 간격 적용 */
+.filter-section {
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; /* 라벨과 컨텐츠 사이의 간격 */
+}
 
 .flag-btn {
     width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border-color);
@@ -103,10 +118,9 @@ body.theme-wish .filter-label { color: #f2bbbb; }
 .text-btn.active { background: var(--theme-color); color: white; border-color: var(--theme-color); font-weight: bold; }
 
 .sub-filter-container { display: none; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 8px;}
-.sub-filter-container.show { display: flex; }
+.sub-filter-container.show { display: flex; width: 100%; }
 
 .sub-btn { padding: 5px 10px; border: 1px solid #dfe6e9; border-radius: 6px; background: #f8f9fa; cursor: pointer; font-size: 12px; color: #b2bec3; }
-/* [수정] 위시 모드 서브 버튼 텍스트 컬러 변경 (#f2bbbb) */
 body.theme-wish .sub-btn { color: #f2bbbb; } 
 
 .sub-btn.active { background: var(--theme-color); color: white; border-color: var(--theme-color); }
@@ -123,7 +137,13 @@ body.theme-wish .sub-btn.active { color: white; }
 .record-reset:hover { background: #fff0f0; border-color: #fca2a2; color: #fca2a2; }
 
 .sidebar-divider { border: none; border-top: 1px solid var(--border-color); margin: 5px 0; }
-.save-options { display: flex; flex-direction: column; gap: 8px; }
+
+/* [수정] 저장 옵션: 간격을 12px로 통일 */
+.save-options { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; /* 필터 섹션과 동일한 간격 */
+}
 
 .custom-input {
     border: 1px solid #dfe6e9; border-radius: 8px; padding: 8px;
@@ -208,12 +228,11 @@ body.theme-wish .item-card.checked { background: #fff0f0; }
         margin-top: 60px;
     }
 
-    /* 헤더 스타일 */
     .mobile-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 15px; /* 좌우 여백 살짝 줄임 */
+        padding: 0 15px; 
         height: 60px;
         background: white;
         border-bottom: 1px solid var(--border-color);
@@ -234,66 +253,61 @@ body.theme-wish .item-card.checked { background: #fff0f0; }
     .mobile-menu-btn { background: transparent; border: none; padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .menu-icon { font-size: 24px; color: var(--theme-color); line-height: 1; transition: 0.2s; }
 
-    /* [핵심] 사이드바 레이아웃: 여백 다이어트! */
+    .sub-filter-container { width: 100%; justify-content: center; }
+    .sub-filter-container.show { display: flex !important; }
+
+    /* 사이드바 스타일 */
     .sidebar {
         position: fixed;
         top: 0; right: -100%; left: auto;
         width: 85%; max-width: 320px;
-        height: 100vh; /* 화면 꽉 차게 */
+        height: 100vh;
         z-index: 1000;
         transition: right 0.3s ease-in-out;
         box-shadow: -4px 0 15px rgba(0,0,0,0.1);
-        
         display: flex; flex-direction: column;
-        
-        /* 내부 여백과 간격을 확 줄여서 스크롤 방지 */
         padding: 15px; 
-        gap: 10px; /* 요소 사이 간격 25px -> 10px로 축소 */
-        
-        /* 혹~시나 화면이 너무 작으면(아이폰SE 등) 스크롤 되게 안전장치 */
+        gap: 10px; 
         overflow-y: auto; 
     }
     
     .sidebar.active { right: 0; }
     .sidebar .sidebar-title { display: none; }
 
-    /* 각 요소들 크기 줄이기 */
-    .tab-btn { padding: 8px; font-size: 14px; } /* 탭 버튼 축소 */
-    .filter-label { margin-bottom: 4px; font-size: 13px; } /* 라벨 여백 축소 */
+    /* [추가] 모바일에서도 필터 섹션과 저장 옵션 간격 동일하게 */
+    .filter-section, .save-options { gap: 10px; }
+
+    .tab-btn { padding: 8px; font-size: 14px; } 
+    /* 라벨 여백 제거 (gap으로 제어) */
+    .filter-label { margin-bottom: 0; font-size: 13px; } 
     
-    /* 필터 그룹 더 촘촘하게 */
     .filter-group { justify-content: center; gap: 6px; }
-    .flag-btn { width: 30px; height: 30px; } /* 국기 살짝 축소 */
-    .char-btn { width: 40px; height: 40px; } /* 캐릭터 살짝 축소 */
-    .text-btn { padding: 6px 10px; font-size: 12px; } /* 텍스트 버튼 축소 */
+    .flag-btn { width: 30px; height: 30px; } 
+    .char-btn { width: 40px; height: 40px; } 
+    .text-btn { padding: 6px 10px; font-size: 12px; } 
 
-    .reset-btn { padding: 8px 0; font-size: 12px; } /* 리셋 버튼 축소 */
+    .reset-btn { padding: 8px 0; font-size: 12px; } 
 
-    /* 구분선 여백 제거 */
-    .sidebar-divider { margin: 2px 0; }
+    .sidebar-divider { margin: 8px 0; }
 
-    /* 저장 옵션 영역 */
-    .save-options { gap: 6px; }
     .option-check { font-size: 12px; }
     .custom-input { padding: 6px; font-size: 12px; }
 
-    /* 하단 버튼들 높이 줄이기 */
-    .save-options .action-btn {
-        height: 40px; /* 48px -> 40px */
-        font-size: 13px;
-    }
+    .save-options .action-btn { height: 40px; font-size: 13px; }
     
-    /* 닫기 버튼 */
     .close-sidebar-btn {
         display: block; width: 100%;
-        padding: 10px; /* 12px -> 10px */
-        margin-top: auto; /* 남은 공간 밀어내기 */
+        padding: 10px; 
+        position: sticky; 
+        bottom: 0;
+        z-index: 50; 
+        margin-top: auto; 
         background: #f1f2f6; border: none; border-radius: 8px;
         color: #636e72; font-weight: bold; cursor: pointer; flex-shrink: 0;
         font-size: 13px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05); 
     }
 
-    /* 메인 컨텐츠 & 오버레이 */
     .main-content { width: 100%; overflow-y: auto; }
     .list-container { padding-top: 15px; }
     .group-title { margin-top: 20px; font-size: 18px; }
