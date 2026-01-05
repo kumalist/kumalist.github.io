@@ -1,15 +1,11 @@
-/**
- * Global Configuration & Data Management
- * Google Spreadsheet ID and Tab Name
- */
+// ============================================================
+// 1. 기본 설정 및 데이터
+// ============================================================
 const SHEET_ID = '1hTPuwTZkRnPVoo5GUUC1fhuxbscwJrLdWVG-eHPWaIM';
 const SHEET_TITLE = '시트1'; 
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_TITLE}`;
 
-/**
- * Company Information Structure
- * Maps company codes to display names and groups
- */
+// 회사 정보 데이터
 const companyInfo = {
     groups: {
         old: ["b-flat", "Anova", "Furyu"],
@@ -26,63 +22,53 @@ const companyInfo = {
     }
 };
 
-// State Variables
+// 상태 변수들
 let productData = [];
 let currentTab = 'owned'; 
 let filters = { country: 'all', character: 'all', companyGroup: 'all', companySpecific: null };
 
-// Load saved data from localStorage
+// 저장된 체크박스 불러오기 (없으면 빈 리스트)
 let checkedItems = {
     owned: new Set(JSON.parse(localStorage.getItem('nongdam_owned') || '[]')),
     wish: new Set(JSON.parse(localStorage.getItem('nongdam_wish') || '[]'))
 };
 
-// DOM Elements
 const listContainer = document.getElementById('listContainer');
 
 // ============================================================
-// Initialization Logic
+// 2. 초기화 및 데이터 로드 (여기가 제일 중요!)
 // ============================================================
-
-/**
- * Initialize application
- * Fetches data and renders the initial list
- */
-document.addEventListener('DOMContentLoaded', async () => {
-    // UI Initialization
-    if (listContainer) {
-        listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;">Loading Data... 🐻</div>';
+async function init() {
+    // 로딩 메시지 띄우기
+    if(listContainer) {
+        listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;">🐻 농담곰 데이터 불러오는 중...</div>';
     }
-
-    // Initialize Event Listeners for Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-    });
-
-    // Fetch and Render
-    await fetchSheetData();
+    
+    await fetchSheetData(); // 데이터 가져오기
+    
+    // 데이터 로드 후 화면 그리기
     renderCompanySubFilters();
     renderList();
     updateTabUI();
-});
+}
 
-/**
- * Fetch data from Google Spreadsheet CSV
- */
 async function fetchSheetData() {
     try {
         const response = await fetch(SHEET_URL);
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('구글 시트 연결 실패');
         
         const data = await response.text();
-        const rows = data.split(/\r?\n/);
+        const rows = data.split(/\r?\n/); // 줄바꿈으로 나누기
         
-        if (rows.length < 2) throw new Error('Empty data returned from sheet');
+        if (rows.length < 2) {
+            throw new Error('데이터가 비어있습니다.');
+        }
 
-        const headers = parseCsvRow(rows[0]);
+        const headers = parseCsvRow(rows[0]); // 첫 줄은 제목(헤더)
         
+        // 데이터 파싱
         productData = rows.slice(1)
-            .filter(row => row.trim() !== "")
+            .filter(row => row.trim() !== "") // 빈 줄 제거
             .map(row => {
                 const values = parseCsvRow(row);
                 let obj = {};
@@ -92,24 +78,21 @@ async function fetchSheetData() {
                 return obj;
             });
 
-        console.log(`[System] Successfully loaded ${productData.length} items.`);
+        console.log(`성공! 총 ${productData.length}개의 데이터를 가져왔어!`);
 
     } catch (err) {
-        console.error("[System] Data Fetch Error:", err);
-        if (listContainer) {
+        console.error("데이터 로드 에러:", err);
+        if(listContainer) {
             listContainer.innerHTML = `<div style="text-align:center; padding:50px; color:#ff7675;">
-                Failed to load data.<br>
-                Error: ${err.message}<br>
-                Please check the Google Sheet publishing settings.
+                데이터를 가져오지 못했어 😢<br>
+                1. 구글 시트가 [웹에 게시] 되었는지 확인해줘.<br>
+                2. 오류 내용: ${err.message}
             </div>`;
         }
     }
 }
 
-/**
- * CSV Row Parser
- * Handles commas inside quotes correctly
- */
+// CSV 파싱 함수 (따옴표, 쉼표 처리)
 function parseCsvRow(row) {
     const result = [];
     let startValueIndex = 0;
@@ -126,9 +109,8 @@ function parseCsvRow(row) {
 }
 
 // ============================================================
-// Rendering & Filtering Logic
+// 3. 화면 렌더링 및 필터 로직
 // ============================================================
-
 function switchTab(tab) {
     currentTab = tab;
     if (tab === 'wish') document.body.classList.add('theme-wish');
@@ -147,7 +129,7 @@ function renderList() {
     if (!listContainer) return;
     listContainer.innerHTML = '';
     
-    // Apply Filters
+    // 필터링
     const filteredData = productData.filter(item => {
         if (filters.country !== 'all' && item.country !== filters.country) return false;
         if (filters.character !== 'all' && item.character !== filters.character) return false;
@@ -161,23 +143,23 @@ function renderList() {
         return true;
     });
 
+    // 데이터 없음 처리
     if (filteredData.length === 0) {
-        listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;">No items match your filter. 😢</div>';
+        listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;">해당하는 농담곰이 없어요 😢</div>';
         return;
     }
 
-    // Grouping Logic
+    // 그룹화 및 카드 생성
     const grouped = {};
     filteredData.forEach(item => {
         let groupKey;
         if (filters.character === 'ngn' && item.subGroup) groupKey = item.subGroup;
-        else groupKey = item.group || "Others";
+        else groupKey = item.group || "기타"; // 그룹 없으면 기타 처리
 
         if (!grouped[groupKey]) grouped[groupKey] = [];
         grouped[groupKey].push(item);
     });
 
-    // Render Groups and Cards
     Object.keys(grouped).forEach(groupName => {
         const title = document.createElement('h3');
         title.className = 'group-title';
@@ -223,11 +205,8 @@ function saveData() {
     localStorage.setItem(`nongdam_${currentTab}`, JSON.stringify([...checkedItems[currentTab]])); 
 }
 
-// ============================================================
-// Filter Actions (Exposed to Global Scope for HTML onclick)
-// ============================================================
-
-window.setFilter = function(type, value) {
+// 필터 버튼 클릭 이벤트들
+function setFilter(type, value) {
     filters[type] = value;
     const parentWrapper = event.currentTarget.closest('.filter-item-wrapper');
     if (parentWrapper) {
@@ -235,12 +214,10 @@ window.setFilter = function(type, value) {
     }
     event.currentTarget.classList.add('active');
     renderList();
-};
+}
 
-window.setCompanyFilter = function(group) {
-    filters.companyGroup = group; 
-    filters.companySpecific = null;
-    
+function setCompanyFilter(group) {
+    filters.companyGroup = group; filters.companySpecific = null;
     const companyWrapper = document.querySelector('[data-type="company"]').closest('.filter-item-wrapper');
     companyWrapper.querySelectorAll('.text-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === group));
     
@@ -251,9 +228,9 @@ window.setCompanyFilter = function(group) {
     
     document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
     renderList();
-};
+}
 
-window.setCompanySpecific = function(companyName, btnElement) {
+function setCompanySpecific(companyName, btnElement) {
     if (filters.companySpecific === companyName) { 
         filters.companySpecific = null; 
         btnElement.classList.remove('active'); 
@@ -263,9 +240,9 @@ window.setCompanySpecific = function(companyName, btnElement) {
         btnElement.classList.add('active'); 
     }
     renderList();
-};
+}
 
-window.renderCompanySubFilters = function() {
+function renderCompanySubFilters() {
     const oldContainer = document.getElementById('old-subs');
     if(oldContainer) {
         oldContainer.innerHTML = '';
@@ -289,9 +266,9 @@ window.renderCompanySubFilters = function() {
             newContainer.appendChild(btn); 
         });
     }
-};
+}
 
-window.resetFilters = function() {
+function resetFilters() {
     filters = { country: 'all', character: 'all', companyGroup: 'all', companySpecific: null };
     document.querySelectorAll('.flag-btn, .char-btn, .text-btn, .sub-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('button[onclick*="all"]').forEach(btn => btn.classList.add('active'));
@@ -302,25 +279,23 @@ window.resetFilters = function() {
     if(newSub) newSub.classList.remove('show');
     
     renderList();
-};
+}
 
-window.resetRecords = function() {
-    const listName = currentTab === 'owned' ? 'Owned' : 'Wish';
-    if (confirm(`Delete all records for [${listName} List]?`)) { 
+function resetRecords() {
+    const listName = currentTab === 'owned' ? '보유' : '위시';
+    if (confirm(`[${listName} 리스트]의 체크 기록을 모두 삭제하시겠습니까?`)) { 
         checkedItems[currentTab].clear(); 
         saveData(); 
         renderList(); 
-        alert(`Reset complete.`); 
+        alert(`초기화되었습니다.`); 
     }
-};
+}
 
 // ============================================================
-// Image Generation Logic
+// 4. 이미지 생성 로직 (안전벨트 추가 버전)
 // ============================================================
 
-/**
- * Helper: Draw Rounded Rectangle
- */
+// 둥근 사각형 그리기 헬퍼
 function roundedRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -335,42 +310,31 @@ function roundedRect(ctx, x, y, width, height, radius) {
     ctx.closePath();
 }
 
-/**
- * Helper: Load Font with Timeout
- * Prevents application hang if font fails to load
- */
+// 폰트 로딩 함수 (타임아웃 기능 추가 - 3초 지나면 무시)
 async function loadFontWithTimeout(name, url, timeout = 3000) {
-    try {
-        const font = new FontFace(name, `url(${url})`);
-        
-        const loadPromise = font.load().then(() => {
-            document.fonts.add(font);
-            return true;
-        });
+    const font = new FontFace(name, `url(${url})`);
+    
+    const loadPromise = font.load().then(() => {
+        document.fonts.add(font);
+        return true;
+    });
 
-        const timeoutPromise = new Promise((resolve) => {
-            setTimeout(() => {
-                console.warn("[System] Font load timed out. Using fallback.");
-                resolve(false);
-            }, timeout);
-        });
+    const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+            console.warn("폰트 로딩 시간 초과! 기본 폰트를 사용합니다.");
+            resolve(false);
+        }, timeout);
+    });
 
-        return await Promise.race([loadPromise, timeoutPromise]);
-    } catch (e) {
-        console.warn("[System] Font loading failed:", e);
-        return false;
-    }
+    return Promise.race([loadPromise, timeoutPromise]);
 }
 
-/**
- * Main Image Generator Function
- * Triggered by the "Generate Image" button
- */
-window.generateImage = async function() {
+// 메인 이미지 생성 함수
+async function generateImage() {
     const ids = [...checkedItems[currentTab]];
-    if (ids.length === 0) return alert("No items selected!");
+    if (ids.length === 0) return alert("선택된 인형이 없어요!");
     
-    // Get Options
+    // HTML 요소 가져오기 (없을 경우 대비)
     const showNameEl = document.getElementById('showName');
     const showPriceEl = document.getElementById('showPrice');
     const btn = document.getElementById('genBtn');
@@ -379,51 +343,50 @@ window.generateImage = async function() {
     const showPrice = showPriceEl ? showPriceEl.checked : true;
     
     const originalText = btn.innerText;
-    btn.innerText = "Loading Fonts...";
+    btn.innerText = "폰트 로딩 중...";
     btn.disabled = true;
 
     try {
-        // Attempt to load font (Jua)
+        // 폰트 로딩 시도 (실패하거나 오래 걸려도 멈추지 않음)
         await loadFontWithTimeout('Jua', 'https://fonts.gstatic.com/s/jua/v14/co364W5X5_Y8yykk.woff2');
         
-        btn.innerText = "Generating...";
+        btn.innerText = "이미지 생성 중...";
 
         const items = ids.map(id => productData.find(p => p.id === id)).filter(p => p);
         const cvs = document.createElement('canvas');
         const ctx = cvs.getContext('2d');
 
-        // Layout Configuration
-        // Dynamic columns: Use count if less than 4, max 4
+        // 디자인 설정
         const cols = Math.min(items.length, 4); 
         const rows = Math.ceil(items.length / cols);
         const cardW = 300, cardH = 420;
         const gap = 30, padding = 60;
-        const headerH = 200; // Increased header height for spacing
-        const cornerRadius = 40; // Rounded corners radius
+        const headerH = 200; 
+        const cornerRadius = 40;
 
-        // Calculate Canvas Size
+        // 캔버스 크기 계산
         cvs.width = padding * 2 + (cardW * cols) + (gap * (cols - 1));
         cvs.height = headerH + padding * 2 + (cardH * rows) + (gap * (rows - 1));
 
-        // Background with Rounded Corners (Clipping)
+        // 전체 라운드 처리
         roundedRect(ctx, 0, 0, cvs.width, cvs.height, cornerRadius);
         ctx.clip(); 
 
-        // Fill Background
+        // 배경색
         ctx.fillStyle = "#fdfbf7";
         ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-        // Header Background Color (Fixed to 'Owned' theme color as requested)
+        // 테마 색상 (보유 테마 고정)
         ctx.fillStyle = "#aeb4d1"; 
         
-        // Draw Title
+        // 타이틀 텍스트
         ctx.font = "bold 70px 'Jua', sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle"; 
         const titleText = currentTab === 'owned' ? "내 농담곰 컬렉션" : "농담곰 위시리스트";
         ctx.fillText(titleText, cvs.width / 2, headerH / 2);
 
-        // Image Loader Helper
+        // 이미지 로드 헬퍼
         const loadImage = (src) => new Promise(resolve => {
             const img = new Image();
             img.crossOrigin = "Anonymous";
@@ -432,7 +395,7 @@ window.generateImage = async function() {
             img.onerror = () => resolve(null);
         });
 
-        // Loop through items and draw cards
+        // 카드 루프
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
             const c = i % cols;
@@ -440,7 +403,7 @@ window.generateImage = async function() {
             const x = padding + c * (cardW + gap);
             const y = headerH + padding + r * (cardH + gap);
 
-            // Draw Card Background
+            // 카드 그리기
             ctx.save();
             roundedRect(ctx, x, y, cardW, cardH, 20); 
             ctx.fillStyle = "white";
@@ -449,14 +412,12 @@ window.generateImage = async function() {
             ctx.shadowOffsetY = 5;
             ctx.fill();
             
-            // Draw Card Border
             ctx.shadowColor = "transparent";
             ctx.strokeStyle = "#eae8e4";
             ctx.lineWidth = 2;
             ctx.stroke();
-            ctx.clip(); // Clip for image
+            ctx.clip();
 
-            // Draw Product Image
             const img = await loadImage(item.image);
             if (img) {
                 const aspect = img.width / img.height;
@@ -466,11 +427,11 @@ window.generateImage = async function() {
             }
             ctx.restore();
 
-            // Draw Text
+            // 텍스트 설정
             ctx.textAlign = "center";
             ctx.textBaseline = "alphabetic";
             
-            // Name
+            // 이름
             if (showName) {
                 ctx.fillStyle = "#2d3436";
                 ctx.font = "bold 22px 'Gowun Dodum', sans-serif";
@@ -487,7 +448,7 @@ window.generateImage = async function() {
                 ctx.fillText(line, x + cardW/2, lineY);
             }
 
-            // Price
+            // 가격
             if (showPrice) {
                 ctx.fillStyle = "#a4b0be";
                 ctx.font = "bold 18px 'Gowun Dodum', sans-serif";
@@ -496,17 +457,25 @@ window.generateImage = async function() {
             }
         }
 
-        // Trigger Download
+        // 다운로드
         const link = document.createElement('a');
         link.download = `nongdam_${currentTab}_list.png`;
         link.href = cvs.toDataURL('image/png');
         link.click();
 
     } catch (err) {
-        alert("Image Generation Error: " + err.message);
+        alert("오류 발생: " + err.message);
         console.error(err);
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
     }
-};
+}
+
+// 탭 버튼 이벤트 등록
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// 시작!
+init();
