@@ -212,101 +212,168 @@ function resetRecords() {
     if (confirm(`[${listName} 리스트]의 체크 기록을 모두 삭제하시겠습니까?`)) { checkedItems[currentTab].clear(); saveData(); renderList(); alert(`초기화되었습니다.`); }
 }
 
+// ... (위쪽 코드들은 그대로 유지) ...
+
+// =========================================
+// ▼▼▼ 여기부터 끝까지 복사해서 덮어씌워줘! ▼▼▼
+// =========================================
+
+// 폰트 로딩을 위한 헬퍼 함수 (캔버스에서 폰트 깨짐 방지)
+async function loadFont(name, url) {
+    const font = new FontFace(name, `url(${url})`);
+    await font.load();
+    document.fonts.add(font);
+}
+
+// 둥근 사각형 그리기 헬퍼 함수
+function roundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+}
+
+// 이미지 생성 함수 (최종 수정판)
 async function generateImage() {
     const ids = [...checkedItems[currentTab]];
     if (ids.length === 0) return alert("선택된 인형이 없어요!");
+    
     const showName = document.getElementById('showName').checked;
     const showPrice = document.getElementById('showPrice').checked;
     const btn = document.getElementById('genBtn');
     const originalText = btn.innerText;
-    btn.innerText = "생성 중...";
+
+    btn.innerText = "폰트 로딩 중...";
     btn.disabled = true;
 
-    const items = ids.map(id => productData.find(p => p.id === id)).filter(p => p);
-    const cvs = document.createElement('canvas');
-    const ctx = cvs.getContext('2d');
-    const cols = 4;
-    const cardW = 300, cardH = 420;
-    const gap = 30, padding = 60, headerH = 150;
-    const rows = Math.ceil(items.length / cols);
+    try {
+        // 1. 주아체(Jua) 폰트 먼저 로딩하기 (깨짐 방지)
+        await loadFont('Jua', 'https://fonts.gstatic.com/s/jua/v14/co364W5X5_Y8yykk.woff2');
+        btn.innerText = "이미지 생성 중...";
 
-    cvs.width = padding * 2 + (cardW * cols) + (gap * (cols - 1));
-    cvs.height = headerH + padding * 2 + (cardH * rows) + (gap * (rows - 1));
+        const items = ids.map(id => productData.find(p => p.id === id)).filter(p => p);
+        const cvs = document.createElement('canvas');
+        const ctx = cvs.getContext('2d');
 
-    ctx.fillStyle = "#fdfbf7";
-    ctx.fillRect(0, 0, cvs.width, cvs.height);
-    ctx.fillStyle = currentTab === 'owned' ? "#aeb4d1" : "#ff7675";
-    ctx.font = "bold 60px 'Jua', sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(currentTab === 'owned' ? "내 농담곰 컬렉션" : "농담곰 위시리스트", cvs.width / 2, 100);
+        // 3. 동적 폭 조절: 아이템이 4개 미만이면 개수만큼만 컬럼 사용
+        const totalItems = items.length;
+        const cols = totalItems < 4 ? totalItems : 4; 
+        const rows = Math.ceil(totalItems / cols);
 
-    const loadImage = (src) => new Promise(resolve => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = src;
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-    });
+        const cardW = 300, cardH = 420;
+        // 2. 타이틀 여백 조정: headerH를 150 -> 220으로 늘림
+        const gap = 30, padding = 60, headerH = 220; 
+        const cornerRadius = 40; // 4. 라운드 효과 반지름
 
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const c = i % cols;
-        const r = Math.floor(i / cols);
-        const x = padding + c * (cardW + gap);
-        const y = headerH + padding + r * (cardH + gap);
+        // 캔버스 전체 크기 계산 (동적 cols 적용됨)
+        cvs.width = padding * 2 + (cardW * cols) + (gap * (cols - 1));
+        cvs.height = headerH + padding * 2 + (cardH * rows) + (gap * (rows - 1));
 
-        ctx.fillStyle = "white";
-        ctx.shadowColor = "rgba(0,0,0,0.1)";
-        ctx.shadowBlur = 15;
-        ctx.fillRect(x, y, cardW, cardH);
-        ctx.shadowColor = "transparent";
-        ctx.strokeStyle = "#eae8e4";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, cardW, cardH);
+        // 4. 전체 라운드 효과 적용 (클리핑)
+        roundedRect(ctx, 0, 0, cvs.width, cvs.height, cornerRadius);
+        ctx.clip(); // 이 이후로는 둥근 사각형 안쪽에만 그려짐
 
-        const img = await loadImage(item.image);
-        if (img) {
-            const aspect = img.width / img.height;
-            let dw = 260, dh = 260;
-            if (aspect > 1) dh = dw / aspect; else dw = dh * aspect;
-            ctx.drawImage(img, x + (300 - dw)/2, y + 20 + (260 - dh)/2, dw, dh);
-        }
+        // 배경색 채우기
+        ctx.fillStyle = "#fdfbf7";
+        ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-        if (showName) {
-            ctx.textAlign = "center";
-            ctx.fillStyle = "#2d3436";
-            ctx.font = "bold 22px 'Gowun Dodum', sans-serif";
-            const name = item.nameKo;
-            const words = name.split(' ');
-            let line = '', lineY = y + 310;
-            for(let n = 0; n < words.length; n++) {
-                let testLine = line + words[n] + ' ';
-                if (ctx.measureText(testLine).width > 260 && n > 0) {
-                    ctx.fillText(line, x + 150, lineY);
-                    line = words[n] + ' '; lineY += 28;
-                } else { line = testLine; }
+        // 5. 테마 색상 적용 (현재 탭 테마 따라가기)
+        // 보유 탭이면 파랑(#aeb4d1), 위시 탭이면 분홍(#ff7675)
+        ctx.fillStyle = currentTab === 'owned' ? "#aeb4d1" : "#ff7675";
+        
+        // 타이틀 그리기 (위치 조정됨)
+        ctx.font = "bold 70px 'Jua', sans-serif"; // 폰트 크기 살짝 키움
+        ctx.textAlign = "center";
+        // cvs.width / 2 덕분에 항상 가운데 정렬됨
+        ctx.fillText(currentTab === 'owned' ? "내 농담곰 컬렉션" : "농담곰 위시리스트", cvs.width / 2, 130); 
+
+        const loadImage = (src) => new Promise(resolve => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = src;
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+        });
+
+        // 카드 반복 그리기
+        for (let i = 0; i < totalItems; i++) {
+            const item = items[i];
+            const c = i % cols;
+            const r = Math.floor(i / cols);
+            const x = padding + c * (cardW + gap);
+            const y = headerH + padding + r * (cardH + gap);
+
+            // 카드 배경 (흰색 둥근 사각형 + 그림자)
+            ctx.save(); // 클리핑 영역 저장을 위해 save
+            roundedRect(ctx, x, y, cardW, cardH, 20); // 카드 자체도 둥글게
+            ctx.fillStyle = "white";
+            ctx.shadowColor = "rgba(0,0,0,0.1)";
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 5;
+            ctx.fill();
+            
+            // 카드 테두리
+            ctx.shadowColor = "transparent";
+            ctx.strokeStyle = "#eae8e4";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.clip(); // 이미지 넘침 방지를 위해 카드 영역 클리핑
+
+            // 이미지 그리기
+            const img = await loadImage(item.image);
+            if (img) {
+                const aspect = img.width / img.height;
+                let dw = 260, dh = 260;
+                if (aspect > 1) dh = dw / aspect; else dw = dh * aspect;
+                // 이미지 위치 살짝 조정
+                ctx.drawImage(img, x + (cardW - dw)/2, y + 30 + (260 - dh)/2, dw, dh);
             }
-            ctx.fillText(line, x + 150, lineY);
+            ctx.restore(); // 카드 클리핑 해제
+
+            // 텍스트 (이름, 가격) 그리기
+            if (showName) {
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#2d3436";
+                ctx.font = "bold 22px 'Gowun Dodum', sans-serif";
+                const name = item.nameKo;
+                const words = name.split(' ');
+                let line = '', lineY = y + 320; // 위치 살짝 조정
+                for(let n = 0; n < words.length; n++) {
+                    let testLine = line + words[n] + ' ';
+                    if (ctx.measureText(testLine).width > 260 && n > 0) {
+                        ctx.fillText(line, x + cardW/2, lineY);
+                        line = words[n] + ' '; lineY += 28;
+                    } else { line = testLine; }
+                }
+                ctx.fillText(line, x + cardW/2, lineY);
+            }
+
+            if (showPrice) {
+                ctx.fillStyle = "#a4b0be";
+                ctx.font = "bold 18px 'Gowun Dodum', sans-serif";
+                const priceY = showName ? y + 395 : y + 340; // 위치 살짝 조정
+                ctx.fillText(item.price, x + cardW/2, priceY);
+            }
         }
 
-        if (showPrice) {
-            ctx.fillStyle = "#a4b0be";
-            ctx.font = "bold 18px 'Gowun Dodum', sans-serif";
-            const priceY = showName ? y + 390 : y + 330; 
-            ctx.fillText(item.price, x + 150, priceY);
-        }
+        // 다운로드 링크 생성 및 클릭
+        const link = document.createElement('a');
+        link.download = `nongdam_${currentTab}_list.png`; // png로 변경 (라운드 투명도 위해)
+        link.href = cvs.toDataURL('image/png');
+        link.click();
+
+    } catch (err) {
+        alert("이미지 생성 중 오류가 발생했어요: " + err.message);
+        console.error(err);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
     }
-
-    const link = document.createElement('a');
-    link.download = `nongdam_${currentTab}_list.jpg`;
-    link.href = cvs.toDataURL('image/jpeg');
-    link.click();
-    btn.innerText = originalText;
-    btn.disabled = false;
 }
-
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-init();
