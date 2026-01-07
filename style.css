@@ -75,11 +75,11 @@ body.theme-wish .tab-btn:not(.active) { color: #a1c2dd; }
 
 .tab-btn.active { background: white; color: var(--theme-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-weight: bold; }
 
-/* [추가] 사이드바 내부 모아보기 버튼 스타일 */
+/* 사이드바 내부 모아보기 버튼 스타일 */
 .sidebar-top-controls {
     display: flex;
     justify-content: center; /* 가운데 정렬 */
-
+    margin-top: 15px; /* 탭 버튼과의 간격 */
     margin-bottom: 5px;
 }
 
@@ -296,7 +296,7 @@ body.theme-wish .item-price {
     margin-left: 5px;
 }
 
-/* [수정] 맨 위로 가기 버튼: 하얀색 원형, 항상 표시 */
+/* 맨 위로 가기 버튼: 하얀색 원형, 항상 표시 */
 #scrollTopBtn {
     display: block !important; /* 항상 표시 */
     opacity: 1 !important; /* 투명도 제거 */
@@ -324,12 +324,12 @@ body.theme-wish .item-price {
     transition: 0.3s;
 }
 
-/* 내부 이미지 스타일 */
+/* [수정 3번] 내부 이미지 스타일: 꽉 차지 않게 50% 크기로 줄임 */
 #scrollTopBtn img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%; /* 이미지도 둥글게 */
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+    border-radius: 0; /* 이미지 자체는 둥글 필요 없음 */
 }
 
 #scrollTopBtn:hover {
@@ -352,7 +352,6 @@ body.theme-wish .item-price {
     
     .app-container {
         flex-direction: column;
-        /* [수정] 스크롤 버그 해결 */
         margin-top: 60px;
         height: calc(100vh - 60px); 
     }
@@ -395,7 +394,10 @@ body.theme-wish .item-price {
         top: 0; right: -100%; left: auto;
         width: 85%; max-width: 320px;
         height: 100vh;
-        z-index: 1000;
+        
+        /* [수정 2번] 사이드바 z-index를 헤더(9999)보다 높게 설정 */
+        z-index: 10000; 
+        
         transition: right 0.3s ease-in-out;
         box-shadow: -4px 0 15px rgba(0,0,0,0.1);
         display: flex; flex-direction: column;
@@ -447,11 +449,11 @@ body.theme-wish .item-price {
     
     .close-sidebar-btn { display: none; }
 
-    /* [모바일] 메인 콘텐츠 상단 여백 추가 확보 */
+    /* [수정 1번] 모바일 메인 콘텐츠 상단 패딩을 20px로 늘려서 잘림 방지 */
     .main-content { 
         width: 100%; 
         overflow-y: auto; 
-        padding-top: 5px; 
+        padding-top: 20px; 
     }
     
     .list-container { padding-top: 0; }
@@ -487,6 +489,11 @@ body.theme-wish .item-price {
         backdrop-filter: blur(2px);
     }
     .overlay.active { display: block; }
+    
+    .top-controls {
+        padding-top: 25px; 
+        justify-content: flex-end; 
+    }
 }
 
 @media (min-width: 769px) {
