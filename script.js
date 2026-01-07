@@ -96,10 +96,16 @@ function switchTab(tab) {
         document.body.classList.remove('theme-wish'); 
     }
     
-    // [수정] 모아보기 버튼 텍스트 변경 (내 콜렉션 / 내 위시)
+    // [수정] 모아보기 버튼 텍스트 변경
     const viewCheckText = document.getElementById('viewCheckText');
     if (viewCheckText) {
         viewCheckText.innerText = tab === 'owned' ? "내 콜렉션 모아보기" : "내 위시 모아보기";
+    }
+
+    // [추가] 탑 버튼 이미지 변경 (항상 표시되므로 여기서 이미지 교체)
+    const topImg = document.getElementById('scrollTopImg');
+    if (topImg) {
+        topImg.src = tab === 'owned' ? 'img/top_own.png' : 'img/top_wish.png';
     }
     
     updateTabUI();
@@ -160,7 +166,6 @@ function renderList() {
         let checkedCount = 0;
 
         // [수정] 무조건 '보유(owned)' 리스트에 있는 것만 카운트
-        // 위시리스트 탭이어도 보유한 수량만 표시됨
         groupItems.forEach(item => {
             if (checkedItems.owned.has(item.id)) {
                 checkedCount++;
@@ -187,16 +192,14 @@ function renderList() {
                 }
             }
 
-            // '체크한 것만 보기' 필터링 (표시 여부 결정)
             if (isViewCheckedOnly && !isChecked) {
                 return; 
             }
 
-            // [수정 핵심] '모아보기' 모드에서는 체크된 아이템이라도
-            // 시각적으로는 원본(체크 안 된 상태)처럼 보여주고 클릭을 막음
+            // 모아보기 상태에서는 시각적 효과 제거 (원본 감상)
             if (isViewCheckedOnly) {
-                isChecked = false; // 시각적 체크 해제
-                isLocked = false; // 락 해제 (보유 중인 위시템도 원본으로 감상)
+                isChecked = false; 
+                isLocked = false; 
             }
 
             visibleItemCount++;
@@ -204,14 +207,12 @@ function renderList() {
             const card = document.createElement('div');
             card.className = `item-card ${isChecked ? 'checked' : ''} ${isLocked ? 'owned-in-wish' : ''}`;
             
-            // [수정] 모아보기 모드일 때는 클릭 이벤트 아예 없음 (감상용)
             if (!isViewCheckedOnly) {
                 card.onclick = () => {
                     if (isLocked) return; 
                     toggleCheck(item.id, card);
                 };
             } else {
-                // 모아보기 모드: 커서 기본으로 변경
                 card.style.cursor = 'default';
             }
 
@@ -232,7 +233,6 @@ function renderList() {
             hasAnyItem = true;
             const title = document.createElement('h3');
             title.className = 'group-title';
-            // 카운트 표시 (보유수량 / 전체수량)
             title.innerHTML = `${groupName} <span class="group-count">(${checkedCount}/${totalCount})</span>`;
             
             listContainer.appendChild(title);
@@ -262,8 +262,6 @@ function toggleCheck(id, cardElement) {
         cardElement.classList.add('checked'); 
     }
     saveData();
-    
-    // 상태 변경 시 리스트 다시 그리기
     renderList();
 }
 
@@ -315,13 +313,8 @@ function toggleNickCheck() {
 }
 
 function scrollFunction() {
-    if (mainContent.scrollTop > 300) {
-        scrollTopBtn.style.display = "block";
-        setTimeout(() => scrollTopBtn.style.opacity = "1", 10);
-    } else {
-        scrollTopBtn.style.opacity = "0";
-        setTimeout(() => scrollTopBtn.style.display = "none", 300);
-    }
+    // [수정] 스크롤 시 버튼 표시 로직 제거 (항상 표시)
+    // 원래 있던 내용은 지우거나 주석 처리하고 비워둡니다.
 }
 
 function scrollToTop() {

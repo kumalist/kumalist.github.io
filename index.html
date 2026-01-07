@@ -35,6 +35,13 @@
                 <button class="tab-btn" data-tab="wish">위시</button>
             </div>
 
+            <div class="sidebar-top-controls">
+                <label class="view-check-label">
+                    <input type="checkbox" id="viewCheckedOnly" onchange="toggleViewChecked()"> 
+                    <span id="viewCheckText">내 콜렉션 모아보기</span>
+                </label>
+            </div>
+
             <hr class="sidebar-divider">
 
             <div class="filter-actions">
@@ -116,18 +123,13 @@
 
         <main class="main-content" id="mainContent">
             
-            <div class="top-controls">
-                <label class="view-check-label">
-                    <input type="checkbox" id="viewCheckedOnly" onchange="toggleViewChecked()"> 
-                    <span id="viewCheckText">내 콜렉션 모아보기</span>
-                </label>
-            </div>
-
             <div id="listContainer" class="list-container">
                 <div style="text-align:center; padding:50px; color:#aaa;">데이터를 불러오는 중입니다...</div>
             </div>
 
-            <button id="scrollTopBtn" onclick="scrollToTop()">▲</button>
+            <button id="scrollTopBtn" onclick="scrollToTop()">
+                <img id="scrollTopImg" src="img/top_own.png" alt="TOP">
+            </button>
 
         </main>
 
