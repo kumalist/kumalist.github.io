@@ -1,4 +1,4 @@
-// script.js (이미지 경로 자동 보정 삭제 & 회사 필터 제거 버전)
+// script.js (구글 시트 연동 URL 수정본)
 
 // [설정] 구글 스프레드시트 ID
 const SHEET_ID = '1hTPuwTZkRnPVoo5GUUC1fhuxbscwJrLdWVG-eHPWaIM';
@@ -23,18 +23,28 @@ async function init() {
     updateTabUI();
 }
 
-// 구글 시트 CSV 데이터 가져오기
+// [수정] 구글 시트 CSV 데이터 가져오기 (URL 방식 변경)
 async function fetchData() {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+    // 1. export?format=csv 방식이 더 안정적임
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
     
     try {
         const response = await fetch(url);
+        
+        // 2. 응답이 실패했거나 텍스트가 아니면 에러 처리
+        if (!response.ok) throw new Error("네트워크 응답이 올바르지 않습니다.");
+        
         const text = await response.text();
         productData = parseCSV(text);
+        
         console.log("데이터 로드 성공:", productData.length + "개");
+        
     } catch (error) {
         console.error("데이터 로드 실패:", error);
-        listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:red;">데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</div>';
+        listContainer.innerHTML = `<div style="text-align:center; padding:50px; color:#aaa; line-height:1.6;">
+            데이터를 불러오지 못했습니다.<br>
+            <span style="font-size:12px;">(컴퓨터 파일로 열었다면 Github에 올려서 확인해주세요!)</span>
+        </div>`;
     }
 }
 
@@ -62,8 +72,7 @@ function parseCSV(csvText) {
         const item = {};
         headers.forEach((header, index) => {
             let value = row[index];
-            
-            // [수정] 이미지 경로 자동 보정 로직 삭제함 (데이터 그대로 사용)
+            // 데이터 그대로 사용
             item[header] = value;
         });
         
@@ -104,6 +113,11 @@ function renderList() {
     const filteredData = getFilteredData(); 
 
     if (filteredData.length === 0) {
+        // 데이터가 아직 로드되지 않았거나 필터 결과가 없을 때
+        if (productData.length === 0) {
+             // fetchData에서 에러 처리를 하므로 여기선 대기
+             return; 
+        }
         listContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;">해당하는 농담곰이 없어요 😢</div>';
         return;
     }
