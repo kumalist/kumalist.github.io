@@ -259,9 +259,9 @@ body.theme-wish .item-price {
     
     .app-container {
         flex-direction: column;
-        /* [모바일] 헤더 높이만큼 마진 + 추가 여백 확보 */
+        /* [수정] 모바일 스크롤 버그 해결: 높이를 자동으로 하지 않고 헤더 뺀 만큼 고정 */
         margin-top: 60px;
-        height: auto; /* 높이 제한 해제 */
+        height: calc(100vh - 60px); 
     }
 
     .mobile-header {
@@ -395,10 +395,35 @@ body.theme-wish .item-price {
     }
     .overlay.active { display: block; }
     
-    /* [모바일] 상단 컨트롤 여백 넉넉히 */
+    /* [수정] 모바일 '체크한 것만 보기' 버튼: 오른쪽 배치 & 플로팅 */
     .top-controls {
-        padding-top: 25px; 
-        justify-content: flex-end; /* 모바일은 오른쪽 유지 */
+        position: fixed;     
+        bottom: 30px;        
+        left: auto;          /* 왼쪽 해제 */
+        right: 20px;         /* 오른쪽 배치 */
+        transform: none;     /* 중앙 정렬 해제 */
+        z-index: 2000;       
+        width: auto;         
+        padding: 0;
+        margin: 0;
+        pointer-events: none; 
+    }
+
+    /* 버튼 디자인 */
+    .view-check-label {
+        pointer-events: auto; 
+        background-color: var(--theme-color); 
+        color: white; 
+        padding: 10px 20px;
+        border-radius: 50px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25); 
+        border: 2px solid white; 
+        font-size: 14px;
+    }
+    
+    .view-check-label:hover {
+        background-color: var(--theme-color);
+        transform: scale(1.05);
     }
 }
 

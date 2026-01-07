@@ -96,6 +96,12 @@ function switchTab(tab) {
         document.body.classList.remove('theme-wish'); 
     }
     
+    // [수정] 모아보기 버튼 텍스트 변경 (내 콜렉션 / 내 위시)
+    const viewCheckText = document.getElementById('viewCheckText');
+    if (viewCheckText) {
+        viewCheckText.innerText = tab === 'owned' ? "내 콜렉션 모아보기" : "내 위시 모아보기";
+    }
+    
     updateTabUI();
     renderList();
 
@@ -181,9 +187,16 @@ function renderList() {
                 }
             }
 
-            // '체크한 것만 보기' 필터링
+            // '체크한 것만 보기' 필터링 (표시 여부 결정)
             if (isViewCheckedOnly && !isChecked) {
                 return; 
+            }
+
+            // [수정 핵심] '모아보기' 모드에서는 체크된 아이템이라도
+            // 시각적으로는 원본(체크 안 된 상태)처럼 보여주고 클릭을 막음
+            if (isViewCheckedOnly) {
+                isChecked = false; // 시각적 체크 해제
+                isLocked = false; // 락 해제 (보유 중인 위시템도 원본으로 감상)
             }
 
             visibleItemCount++;
@@ -191,10 +204,16 @@ function renderList() {
             const card = document.createElement('div');
             card.className = `item-card ${isChecked ? 'checked' : ''} ${isLocked ? 'owned-in-wish' : ''}`;
             
-            card.onclick = () => {
-                if (isLocked) return; 
-                toggleCheck(item.id, card);
-            };
+            // [수정] 모아보기 모드일 때는 클릭 이벤트 아예 없음 (감상용)
+            if (!isViewCheckedOnly) {
+                card.onclick = () => {
+                    if (isLocked) return; 
+                    toggleCheck(item.id, card);
+                };
+            } else {
+                // 모아보기 모드: 커서 기본으로 변경
+                card.style.cursor = 'default';
+            }
 
             card.innerHTML = `
                 <div class="item-img-wrapper">
