@@ -228,6 +228,13 @@ body.theme-wish .sub-btn.active { color: white; }
 .item-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
 .item-card.checked { border: 2px solid var(--theme-color); }
 
+.item-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.item-card.checked { border: 2px solid var(--theme-color); }
+
+/* 보유(기본) 모드일 때 체크된 카드 배경색 (연보라) */
+body:not(.theme-wish) .item-card.checked { background: #aeb4d142; /* 연한 보라색 */
+}
+
 /* [추가] 위시 모드일 때만 체크된 카드 배경색 변경 */
 body.theme-wish .item-card.checked { background: #fff0f342; /* 핑크 배경 */ }
 
