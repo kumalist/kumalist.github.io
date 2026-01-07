@@ -79,7 +79,7 @@ body.theme-wish .tab-btn:not(.active) { color: #a1c2dd; }
 .sidebar-top-controls {
     display: flex;
     justify-content: center; /* 가운데 정렬 */
-
+    margin-top: 15px; /* 탭 버튼과의 간격 */
     margin-bottom: 5px;
 }
 
