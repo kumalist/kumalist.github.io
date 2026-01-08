@@ -100,7 +100,8 @@
             
             <div class="save-options">
                 <span class="filter-label">체크한 이미지 저장</span>
-                <div class="option-row title-row">
+                
+                <div class="option-row title-row" id="titleOptionRow">
                     <label class="option-check title-label">
                         <input type="checkbox" id="showTitle" checked> 타이틀
                     </label>
@@ -108,13 +109,19 @@
                 </div>
 
                 <div class="option-row compact-row">
-                    <label class="option-check">
-                        <input type="checkbox" id="showName" checked> 상품명
-                    </label>
-                    <label class="option-check">
-                        <input type="checkbox" id="showPrice" checked> 가격
-                    </label>
+                    <div id="textOptions" style="display:flex; gap:8px;">
+                        <label class="option-check">
+                            <input type="checkbox" id="showName" checked> 상품명
+                        </label>
+                        <label class="option-check">
+                            <input type="checkbox" id="showPrice"> 가격
+                        </label>
                     </div>
+                    
+                    <label class="option-check" style="margin-left: 5px; color: var(--theme-color); font-weight: bold;">
+                        <input type="checkbox" id="simpleMode" onchange="toggleSimpleModeUI()"> 간소화
+                    </label>
+                </div>
 
                 <div class="button-group" style="margin-top: 15px;">
                     <button class="action-btn page-btn" id="genBtnCurrent" onclick="generateImage('current')" style="font-size: 13px; padding: 0;">현재 페이지 저장</button>

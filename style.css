@@ -156,6 +156,13 @@ body.theme-wish .sub-btn.active { color: white; }
 .sidebar-divider { border: none; border-top: 1px solid var(--border-color); margin: 5px 0; }
 .save-options { display: flex; flex-direction: column; gap: 12px; }
 
+/* [추가] 비활성화된 옵션 스타일 (흐리게 처리) */
+.disabled-option {
+    opacity: 0.5;
+    pointer-events: none; /* 클릭 방지 */
+    transition: opacity 0.3s;
+}
+
 .custom-input {
     border: 1px solid #dfe6e9; border-radius: 8px; padding: 8px;
     font-family: 'Gowun Dodum', sans-serif; font-size: 13px; color: #2d3436;

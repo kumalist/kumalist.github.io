@@ -329,14 +329,30 @@ function resetRecords() {
     }
 }
 
-function toggleNickCheck() {
-    const nickInput = document.getElementById('nickInput');
-    const nickCheck = document.getElementById('showNick');
-    
-    if (nickInput.value.trim().length > 0) {
-        nickCheck.checked = true;
+// [추가] 간소화 모드 UI 토글 함수
+function toggleSimpleModeUI() {
+    const isSimple = document.getElementById('simpleMode').checked;
+    const titleRow = document.getElementById('titleOptionRow');
+    const textOptions = document.getElementById('textOptions');
+
+    if (isSimple) {
+        // 비활성화 스타일 및 입력 방지
+        titleRow.classList.add('disabled-option');
+        textOptions.classList.add('disabled-option');
+        
+        document.getElementById('showTitle').disabled = true;
+        document.getElementById('customTitle').disabled = true;
+        document.getElementById('showName').disabled = true;
+        document.getElementById('showPrice').disabled = true;
     } else {
-        nickCheck.checked = false;
+        // 복구
+        titleRow.classList.remove('disabled-option');
+        textOptions.classList.remove('disabled-option');
+
+        document.getElementById('showTitle').disabled = false;
+        document.getElementById('customTitle').disabled = false;
+        document.getElementById('showName').disabled = false;
+        document.getElementById('showPrice').disabled = false;
     }
 }
 
@@ -348,7 +364,7 @@ function scrollToTop() {
     mainContent.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- [수정] 이미지 생성 (가변 그리드 적용) ---
+// --- [수정] 이미지 생성 (간소화 모드 + 가변 그리드 적용) ---
 async function generateImage(mode = 'all') {
     let sourceData = [];
 
@@ -374,10 +390,12 @@ async function generateImage(mode = 'all') {
     
     await document.fonts.ready;
 
+    // 옵션 체크 여부 확인
+    const isSimpleMode = document.getElementById('simpleMode').checked; // 간소화 모드 체크
+    
     const showName = document.getElementById('showName').checked;
     const showPrice = document.getElementById('showPrice').checked;
     const showTitle = document.getElementById('showTitle').checked;
-    
     const customTitle = document.getElementById('customTitle').value;
 
     const btnId = mode === 'all' ? 'genBtnAll' : 'genBtnCurrent';
@@ -389,51 +407,60 @@ async function generateImage(mode = 'all') {
     const cvs = document.createElement('canvas');
     const ctx = cvs.getContext('2d');
     
-    // [핵심 로직] 제곱근(√)을 이용한 가변 컬럼 수 계산
+    // [가변 그리드 계산]
     const totalCount = items.length;
-    let calculatedCols = Math.round(Math.sqrt(totalCount)); // 제곱근 반올림 (예: 16 -> 4, 20 -> 4, 25 -> 5)
+    let calculatedCols = Math.round(Math.sqrt(totalCount)); 
     
-    // 최소 3칸 ~ 최대 8칸 제한 (모바일 및 PC 보기 좋게)
+    // 최소/최대 컬럼 제한
     if (calculatedCols < 3) calculatedCols = 3;
     if (calculatedCols > 8) calculatedCols = 8;
-    
-    // 만약 아이템이 매우 적은 경우(예: 2개)는 그냥 개수만큼만 설정
     if (totalCount < 3) calculatedCols = totalCount;
 
     const cols = calculatedCols;
     
-    // 카드 높이 계산
-    let dynamicCardH = 300; 
-    if (showName) dynamicCardH += 80;
-    if (showPrice) dynamicCardH += 40;
-    
-    const cardW = 300;
-    const cardH = dynamicCardH; 
-    
-// ... 위쪽 코드 생략 ...
+    // [설정 분기] 간소화 모드 vs 일반 모드
+    let cardW, cardH, gap, headerH, titleY;
 
-    const gap = 30, padding = 60;
-    
-    const headerH = showTitle ? 140 : 60; 
-    const titleY = 70;    
+    if (isSimpleMode) {
+        // --- 간소화 모드 설정 ---
+        cardW = 160; // 원형 지름
+        cardH = 160; // 원형 지름 (정사각형 공간)
+        gap = 15;    // 간격 좁게
+        
+        // 타이틀 강제 숨김 처리 (여백만 60px)
+        headerH = 60; 
+        titleY = 0; // 안 씀
+    } else {
+        // --- 일반 모드 설정 ---
+        cardW = 300;
+        let dynamicCardH = 300; 
+        if (showName) dynamicCardH += 80;
+        if (showPrice) dynamicCardH += 40;
+        cardH = dynamicCardH;
+        
+        gap = 30;
+        headerH = showTitle ? 140 : 60;
+        titleY = 70;
+    }
 
+    const padding = 60;
     const rows = Math.ceil(items.length / cols);
 
-    // 캔버스 전체 높이 계산
-    // 헤더높이(headerH) + 카드들이 차지하는 높이 + 하단 여백(padding)
+    // 캔버스 크기 설정
     cvs.width = padding * 2 + (cardW * cols) + (gap * (cols - 1));
     cvs.height = headerH + (cardH * rows) + (gap * (rows - 1)) + padding;
 
+    // 배경색 채우기
     ctx.fillStyle = "#FAFAFA";
     ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-    if (showTitle) {
+    // [일반 모드일 때만] 타이틀 그리기
+    if (!isSimpleMode && showTitle) {
         const titleColor = "#aeb4d1"; 
         ctx.fillStyle = titleColor;
         ctx.font = "bold 45px 'Paperlogy', sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle"; 
-        // 캔버스 중앙에 타이틀 배치
         ctx.fillText(customTitle, cvs.width / 2, titleY);
     }
 
@@ -445,6 +472,7 @@ async function generateImage(mode = 'all') {
         img.onerror = () => resolve(null);
     });
 
+    // 둥근 사각형 그리기 함수 (일반 모드용)
     function roundRect(ctx, x, y, w, h, r) {
         ctx.beginPath();
         ctx.moveTo(x + r, y);
@@ -466,55 +494,112 @@ async function generateImage(mode = 'all') {
         const x = padding + c * (cardW + gap);
         const y = headerH + r * (cardH + gap); 
 
-        // 카드 배경
-        ctx.fillStyle = "white";
-        ctx.shadowColor = "rgba(0,0,0,0.1)";
-        ctx.shadowBlur = 15;
-        
-        roundRect(ctx, x, y, cardW, cardH, 20);
-        ctx.fill();
-        
-        // 카드 테두리
-        ctx.shadowColor = "transparent";
-        ctx.strokeStyle = "#dfe6e9"; 
-        ctx.lineWidth = 2;
-        roundRect(ctx, x, y, cardW, cardH, 20);
-        ctx.stroke();
-
+        // 이미지 로드
         const img = await loadImage(item.image);
-        if (img) {
-            const aspect = img.width / img.height;
-            let dw = 260, dh = 260;
-            if (aspect > 1) dh = dw / aspect; else dw = dh * aspect;
-            ctx.drawImage(img, x + (cardW - dw)/2, y + 20 + (260 - dh)/2, dw, dh);
-        }
 
-        // 이름 표시
-        if (showName) {
-            ctx.textAlign = "center";
-            ctx.textBaseline = "alphabetic"; 
-            ctx.fillStyle = "#2d3436";
-            ctx.font = "bold 22px 'Gowun Dodum', sans-serif";
-            
-            const name = item.nameKo;
-            const words = name.split(' ');
-            let line = '', lineY = y + 310;
-            for(let n = 0; n < words.length; n++) {
-                let testLine = line + words[n] + ' ';
-                if (ctx.measureText(testLine).width > 260 && n > 0) {
-                    ctx.fillText(line, x + cardW/2, lineY);
-                    line = words[n] + ' '; lineY += 28;
-                } else { line = testLine; }
+        if (isSimpleMode) {
+            // ==========================
+            // [간소화 모드] 원형 그리기
+            // ==========================
+            const radius = cardW / 2;
+            const cx = x + radius;
+            const cy = y + radius;
+
+            // 1. 원형 배경 (흰색) + 그림자
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = "white";
+            ctx.shadowColor = "rgba(0,0,0,0.1)"; // 연한 그림자
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 2;
+            ctx.fill();
+            ctx.restore();
+
+            // 2. 이미지 클리핑 및 그리기
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.clip(); // 원형으로 자르기
+
+            if (img) {
+                // 이미지 꽉 차게 (cover)
+                const aspect = img.width / img.height;
+                let dw = cardW, dh = cardH;
+                if (aspect > 1) { // 가로가 더 긴 경우
+                    dw = cardH * aspect;
+                } else { // 세로가 더 긴 경우
+                    dh = cardW / aspect;
+                }
+                // 중앙 정렬
+                ctx.drawImage(img, x + (cardW - dw) / 2, y + (cardH - dh) / 2, dw, dh);
             }
-            ctx.fillText(line, x + cardW/2, lineY);
-        }
+            ctx.restore();
 
-        // 가격 표시
-        if (showPrice) {
-            ctx.fillStyle = "#b2bec3";
-            ctx.font = "bold 18px 'Gowun Dodum', sans-serif";
-            const priceY = showName ? y + 390 : y + 330; 
-            ctx.fillText(item.price, x + cardW/2, priceY);
+            // 3. 테두리 그리기 (이미지 위에 덮어쓰기)
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = "#dfe6e9"; // 연한 테두리
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+
+        } else {
+            // ==========================
+            // [일반 모드] 카드형 그리기
+            // ==========================
+            
+            // 카드 배경
+            ctx.fillStyle = "white";
+            ctx.shadowColor = "rgba(0,0,0,0.1)";
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 0;
+            
+            roundRect(ctx, x, y, cardW, cardH, 20);
+            ctx.fill();
+            
+            // 카드 테두리
+            ctx.shadowColor = "transparent";
+            ctx.strokeStyle = "#dfe6e9"; 
+            ctx.lineWidth = 2;
+            roundRect(ctx, x, y, cardW, cardH, 20);
+            ctx.stroke();
+
+            if (img) {
+                const aspect = img.width / img.height;
+                let dw = 260, dh = 260;
+                if (aspect > 1) dh = dw / aspect; else dw = dh * aspect;
+                ctx.drawImage(img, x + (cardW - dw)/2, y + 20 + (260 - dh)/2, dw, dh);
+            }
+
+            // 이름 표시
+            if (showName) {
+                ctx.textAlign = "center";
+                ctx.textBaseline = "alphabetic"; 
+                ctx.fillStyle = "#2d3436";
+                ctx.font = "bold 22px 'Gowun Dodum', sans-serif";
+                
+                const name = item.nameKo;
+                const words = name.split(' ');
+                let line = '', lineY = y + 310;
+                for(let n = 0; n < words.length; n++) {
+                    let testLine = line + words[n] + ' ';
+                    if (ctx.measureText(testLine).width > 260 && n > 0) {
+                        ctx.fillText(line, x + cardW/2, lineY);
+                        line = words[n] + ' '; lineY += 28;
+                    } else { line = testLine; }
+                }
+                ctx.fillText(line, x + cardW/2, lineY);
+            }
+
+            // 가격 표시
+            if (showPrice) {
+                ctx.fillStyle = "#b2bec3";
+                ctx.font = "bold 18px 'Gowun Dodum', sans-serif";
+                const priceY = showName ? y + 390 : y + 330; 
+                ctx.fillText(item.price, x + cardW/2, priceY);
+            }
         }
     }
 
@@ -525,17 +610,3 @@ async function generateImage(mode = 'all') {
     btn.innerText = originalText;
     btn.disabled = false;
 }
-
-function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.overlay');
-    
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-init();
