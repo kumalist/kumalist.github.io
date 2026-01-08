@@ -491,14 +491,6 @@ body:not(.theme-wish) .view-check-label:hover { background: #f1f2f6; }
     .mobile-menu-btn { background: transparent; border: none; padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .menu-icon { font-size: 24px; color: var(--theme-color); line-height: 1; transition: 0.2s; }
 
-    /* 회사 하위 필터가 모바일에서 잘 보이도록 강제 flex + 줄바꿈 적용 */
-    .sub-filter-container { width: 100%; justify-content: center; }
-    .sub-filter-container.show { 
-        display: flex !important; 
-        flex-wrap: wrap; 
-        gap: 6px;
-    }
-
     .sidebar {
         position: fixed;
         top: 0; right: -100%; left: auto;
