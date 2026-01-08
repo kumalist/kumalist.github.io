@@ -102,8 +102,12 @@ body.theme-wish .sub-btn { color: #fdd2d6; }
     margin-top: 15px; /* 위쪽 여백 추가 */
 }
 
+/* [수정] 국기 버튼 직사각형(3:2 비율)으로 변경 */
 .flag-btn {
-    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border-color);
+    width: 30px; /* 가로 */
+    height: 20px; /* 세로 (3:2 비율) */
+    border-radius: 4px; /* 둥근 사각형 */
+    border: 2px solid var(--border-color);
     background-size: cover; background-position: center; cursor: pointer; position: relative;
     transition: 0.2s; overflow: hidden;
 }
@@ -116,6 +120,15 @@ body.theme-wish .sub-btn { color: #fdd2d6; }
 }
 .flag-btn:hover .overlay { opacity: 1; }
 .flag-btn.active { border-color: var(--theme-color); border-width: 2px; transform: scale(1.1); }
+
+button[onclick*="'country', 'all'"] {
+    width: 34px;
+    height: 24px;
+    padding: 0; /* 패딩 제거 */
+    font-size: 10px; /* 글씨 크기 축소 */
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; /* 텍스트 정중앙 */
+}
 
 .char-btn {
     width: 48px; height: 48px; border-radius: 12px; border: 2px solid var(--border-color);
@@ -551,7 +564,10 @@ body:not(.theme-wish) .view-check-label:hover { background: #f1f2f6; }
     .filter-label { margin-bottom: 0; font-size: 13px; } 
     
     .filter-group { justify-content: center; gap: 6px; }
-    .flag-btn { width: 30px; height: 30px; } 
+    
+    /* [수정] 모바일에서도 국기 3:2 비율(30x20) 유지 */
+    .flag-btn { width: 30px; height: 20px; } 
+    
     .char-btn { width: 40px; height: 40px; } 
     .text-btn { padding: 6px 10px; font-size: 12px; } 
 
@@ -577,12 +593,11 @@ body:not(.theme-wish) .view-check-label:hover { background: #f1f2f6; }
     
     .group-title { margin-top: 20px; font-size: 18px; }
     
-/* 모바일 3단 그리드 유지 (3fr) + 간격 축소 */
-    .items-grid {
+    /* 모바일 3단 그리드 유지 (3fr) + 상하 간격 조절 */
+    .items-grid { 
         display: grid;
         grid-template-columns: repeat(3, 1fr); /* 3단 유지 */
-        /* [수정] gap: 세로(15px) 가로(5px) 따로 설정 */
-        gap: 10px 5px;
+        gap: 15px 5px; /* [수정] 상하 15px, 좌우 5px */
     }
 
     /* [수정] 모바일에서 카드 내용물 크기 축소 및 패딩 조절 */
