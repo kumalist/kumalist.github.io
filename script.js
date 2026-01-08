@@ -410,17 +410,19 @@ async function generateImage(mode = 'all') {
     const cardW = 300;
     const cardH = dynamicCardH; 
     
+// ... 위쪽 코드 생략 ...
+
     const gap = 30, padding = 60;
     
-    const headerH = 160; 
-    const titleY = 60;    
-    const nickY = 115;    
+    const headerH = showTitle ? 140 : 60; 
+    const titleY = 70;    
 
     const rows = Math.ceil(items.length / cols);
 
-    // 캔버스 크기 설정 (cols에 따라 너비가 변함)
+    // 캔버스 전체 높이 계산
+    // 헤더높이(headerH) + 카드들이 차지하는 높이 + 하단 여백(padding)
     cvs.width = padding * 2 + (cardW * cols) + (gap * (cols - 1));
-    cvs.height = headerH + padding + (cardH * rows) + (gap * (rows - 1));
+    cvs.height = headerH + (cardH * rows) + (gap * (rows - 1)) + padding;
 
     ctx.fillStyle = "#FAFAFA";
     ctx.fillRect(0, 0, cvs.width, cvs.height);
